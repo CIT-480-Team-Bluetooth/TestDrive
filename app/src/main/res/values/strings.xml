@@ -48,5 +48,11 @@
     <string name="model">Model</string>
     <string name="vin">VIN</string>
     <string name="notes">Notes</string>
+    <string name="data">Data</string>
+    <string name="live">Live</string>
+    <string name="export">Export</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="notification_titile">TestDrive is currently logging</string>
 
 </resources>
