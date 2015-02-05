@@ -2,12 +2,51 @@
 <resources>
 
     <string name="app_name">TestDrive</string>
-    <string name="title_section1">Section 1</string>
-    <string name="title_section2">Section 2</string>
-    <string name="title_section3">Section 3</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="action_example">Example action</string>
+    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="vehicle">Vehicle</string>
+    <string name="record">Record</string>
+    <string name="weather">Weather conditions</string>
+    <string-array name="weather_items">
+        <item>Rain</item>
+        <item>Snow</item>
+        <item>Cloudy</item>
+        <item>Fog</item>
+        <item>Wet</item>
+        <item>Windy</item>
+        <item>Dry</item>
+        <item>Sunny/clear</item>
+    </string-array>
+    <string name="road_type">Road type</string>
+    <string-array name="road_type_items">
+        <item>Dirt</item>
+        <item>Asphalt</item>
+        <item>Gravel</item>
+        <item>Concrete</item>
+        <item>Off-road</item>
+    </string-array>
+    <string name="road_condition">Road condition</string>
+    <string-array name="road_condition_items">
+        <item>Smooth</item>
+        <item>Slightly bumpy</item>
+        <item>Bumpy</item>
+        <item>Very bumpy</item>
+    </string-array>
+    <string name="visibility">Visibility</string>
+    <string-array name="visibility_items">
+        <item>Clear</item>
+        <item>Slightly foggy</item>
+        <item>Foggy</item>
+        <item>Very foggy</item>
+    </string-array>
+    <string name="traffic">Traffic congestion</string>
+    <string-array name="traffic_items">
+        <item>Light</item>
+        <item>Medium</item>
+        <item>Heavy</item>
+    </string-array>
+    <string name="model">Model</string>
+    <string name="vin">VIN</string>
+    <string name="notes">Notes</string>
 
 </resources>
