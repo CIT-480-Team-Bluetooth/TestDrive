@@ -7,17 +7,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 /**
  * Created by jeffq on 2/5/2015.
  */
 public class RecordFragment extends Fragment {
 
-    private Spinner mWeatherSpinner;
-    private Spinner mRoadTypeSpinner;
-    private Spinner mRoadConditionSpinner;
-    private Spinner mVisibilitySpinner;
-    private Spinner mTrafficSpinner;
+    public Spinner mWeatherSpinner;
+    public Spinner mRoadTypeSpinner;
+    public Spinner mRoadConditionSpinner;
+    public Spinner mVisibilitySpinner;
+    public Spinner mTrafficSpinner;
+    public TextView mTimestampText;
+
     private ArrayAdapter<CharSequence> mWeatherAdapter;
     private ArrayAdapter<CharSequence> mRoadTypeAdapter;
     private ArrayAdapter<CharSequence> mRoadConditionAdapter;
@@ -61,6 +64,8 @@ public class RecordFragment extends Fragment {
                 R.array.traffic_items, android.R.layout.simple_spinner_item);
         mTrafficAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mTrafficSpinner.setAdapter(mTrafficAdapter);
+
+        mTimestampText = (TextView)view.findViewById(R.id.timestamp_text);
     }
 
 }

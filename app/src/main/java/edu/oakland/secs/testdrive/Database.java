@@ -1,5 +1,6 @@
 package edu.oakland.secs.testdrive;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -10,15 +11,54 @@ import android.provider.BaseColumns;
  */
 public class Database extends SQLiteOpenHelper {
 
+    private Context mContext;
+
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "TestDrive.db";
 
     public Database(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        mContext = context;
     }
 
     public void onCreate(SQLiteDatabase db) {
+        db.execSQL(Contract.Drives.CREATE_SQL);
+        db.execSQL(Contract.WeatherConditions.CREATE_SQL);
+        db.execSQL(Contract.RoadTypes.CREATE_SQL);
+        db.execSQL(Contract.RoadConditions.CREATE_SQL);
+        db.execSQL(Contract.Visbilities.CREATE_SQL);
+        db.execSQL(Contract.TrafficCongestions.CREATE_SQL);
+        db.execSQL(Contract.Entries.CREATE_SQL);
 
+        for(String weather_item : mContext.getResources().getStringArray(R.array.weather_items)) {
+            ContentValues values = new ContentValues();
+            values.put(Contract.WeatherConditions.COLUMN_NAME_CONDITION, weather_item);
+            db.insert(Contract.WeatherConditions.TABLE_NAME, null, values);
+        }
+
+        for(String road_type : mContext.getResources().getStringArray(R.array.road_type_items)) {
+            ContentValues values = new ContentValues();
+            values.put(Contract.RoadTypes.COLUMN_NAME_TYPE, road_type);
+            db.insert(Contract.RoadTypes.TABLE_NAME, null, values);
+        }
+
+        for(String road_condition : mContext.getResources().getStringArray(R.array.road_condition_items)) {
+            ContentValues values = new ContentValues();
+            values.put(Contract.RoadConditions.COLUMN_NAME_CONDITION, road_condition);
+            db.insert(Contract.RoadConditions.TABLE_NAME, null, values);
+        }
+
+        for(String visibility_item : mContext.getResources().getStringArray(R.array.visibility_items)) {
+            ContentValues values = new ContentValues();
+            values.put(Contract.Visbilities.COLUMN_NAME_VISIBILITY, visibility_item);
+            db.insert(Contract.Visbilities.TABLE_NAME, null, values);
+        }
+
+        for(String congestion_item : mContext.getResources().getStringArray(R.array.traffic_items)) {
+            ContentValues values = new ContentValues();
+            values.put(Contract.TrafficCongestions.COLUMN_NAME_CONGESTION, congestion_item);
+            db.insert(Contract.TrafficCongestions.TABLE_NAME, null, values);
+        }
     }
 
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -54,30 +94,56 @@ public class Database extends SQLiteOpenHelper {
         public static abstract class WeatherConditions implements BaseColumns {
             public static final String TABLE_NAME = "weather_conditions";
             public static final String COLUMN_NAME_CONDITION = "condition";
+
+            public static final String CREATE_SQL =
+                    "CREATE TABLE " + TABLE_NAME + " (" +
+                            _ID + " INTEGER PRIMARY KEY, " +
+                            COLUMN_NAME_CONDITION + " TEXT)";
         }
 
         public static abstract class RoadTypes implements BaseColumns {
             public static final String TABLE_NAME = "road_types";
-            public static final String COLUMN_NAME_TYPES = "type";
+            public static final String COLUMN_NAME_TYPE = "type";
+
+            public static final String CREATE_SQL =
+                    "CREATE TABLE " + TABLE_NAME + " (" +
+                            _ID + " INTEGER PRIMARY KEY, " +
+                            COLUMN_NAME_TYPE + " TEXT)";
         }
 
         public static abstract class RoadConditions implements BaseColumns {
             public static final String TABLE_NAME = "road_conditions";
             public static final String COLUMN_NAME_CONDITION = "condition";
+
+            public static final String CREATE_SQL =
+                    "CREATE TABLE " + TABLE_NAME + " (" +
+                            _ID + " INTEGER PRIMARY KEY, " +
+                            COLUMN_NAME_CONDITION + " TEXT)";
         }
 
         public static abstract class Visbilities implements BaseColumns {
             public static final String TABLE_NAME = "visibilities";
             public static final String COLUMN_NAME_VISIBILITY = "visibility";
+
+            public static final String CREATE_SQL =
+                    "CREATE TABLE " + TABLE_NAME + " (" +
+                            _ID + " INTEGER PRIMARY KEY, " +
+                            COLUMN_NAME_VISIBILITY + " TEXT)";
         }
 
         public static abstract class TrafficCongestions implements BaseColumns {
             public static final String TABLE_NAME = "traffic_congestions";
             public static final String COLUMN_NAME_CONGESTION = "congestion";
+
+            public static final String CREATE_SQL =
+                    "CREATE TABLE " + TABLE_NAME + " (" +
+                            _ID + " INTEGER PRIMARY KEY, " +
+                            COLUMN_NAME_CONGESTION + " TEXT)";
         }
 
         public static abstract class Entries implements BaseColumns {
             public static final String TABLE_NAME = "entries";
+            public static final String COLUMN_NAME_DRIVE = "drive";
             public static final String COLUMN_NAME_TIME = "time";
             public static final String COLUMN_NAME_WEATHER_CONDITION = "weather_condition";
             public static final String COLUMN_NAME_ROAD_TYPE = "road_type";
@@ -88,6 +154,21 @@ public class Database extends SQLiteOpenHelper {
             public static final String COLUMN_NAME_LONGITUDE = "longitude";
             public static final String COLUMN_NAME_SPEED = "speed";
             public static final String COLUMN_NAME_BEARING = "bearing";
+
+            public static final String CREATE_SQL =
+                    "CREATE TABLE " + TABLE_NAME + " (" +
+                            _ID + " INTEGER PRIMARY KEY, " +
+                            COLUMN_NAME_DRIVE + " INTEGER, " +
+                            COLUMN_NAME_TIME + " INTEGER, " +
+                            COLUMN_NAME_WEATHER_CONDITION + " INTEGER, " +
+                            COLUMN_NAME_ROAD_TYPE + " INTEGER, " +
+                            COLUMN_NAME_ROAD_CONDITION + " INTEGER, " +
+                            COLUMN_NAME_VISIBILITY + " INTEGER, " +
+                            COLUMN_NAME_TRAFFIC_CONGESTION + " INTEGER, " +
+                            COLUMN_NAME_LATITUDE + " REAL, " +
+                            COLUMN_NAME_LONGITUDE + " REAL, " +
+                            COLUMN_NAME_SPEED + " REAL, " +
+                            COLUMN_NAME_BEARING + " REAL)";
         }
     }
 

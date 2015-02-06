@@ -78,7 +78,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
         android:text="Timestamp"
-        android:id="@+id/textView6"
+        android:id="@+id/timestamp_text"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp" />
 

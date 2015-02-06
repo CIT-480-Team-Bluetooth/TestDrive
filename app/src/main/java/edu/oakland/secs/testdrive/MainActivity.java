@@ -25,6 +25,11 @@ import android.os.Build;
 
 import junit.framework.Test;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * Main activity that holds the entire app
  *
@@ -35,6 +40,9 @@ public class MainActivity extends ActionBarActivity {
     private ViewPager mViewPager;
     private LoggerService.LoggerBinder mLoggerBinder;
     private MenuItem mStartStopMenuItem;
+    private Timer mTimer;
+    private VehicleFragment mVehicleFragment;
+    private RecordFragment mRecordFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +62,18 @@ public class MainActivity extends ActionBarActivity {
         bindService(loggerIntent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        startTimer();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopTimer();
+    }
+
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -67,6 +87,10 @@ public class MainActivity extends ActionBarActivity {
                             syncStartStop();
                         }
                     });
+                    if(started)
+                        startTimer();
+                    else
+                        stopTimer();
                 }
             });
         }
@@ -86,7 +110,39 @@ public class MainActivity extends ActionBarActivity {
             return;
         mStartStopMenuItem.setIcon(mLoggerBinder.isRunning() ?
                 R.drawable.ic_stop : R.drawable.ic_play);
+    }
 
+    private static final int TIMESTAMP_UPDATE_RATE = 1000 / 20;
+    private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
+
+    private void startTimer() {
+        stopTimer();
+        if(mLoggerBinder != null) {
+            if(mLoggerBinder.isRunning()) {
+                mTimer = new Timer();
+                mTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        if(mRecordFragment.isVisible()) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mRecordFragment.mTimestampText.setText(
+                                            new SimpleDateFormat(TIMESTAMP_FORMAT).format(new Date()));
+                                }
+                            });
+                        }
+                    }
+                }, TIMESTAMP_UPDATE_RATE, TIMESTAMP_UPDATE_RATE);
+            }
+        }
+    }
+
+    private void stopTimer() {
+        if(mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
+        }
     }
 
     @Override
@@ -110,8 +166,10 @@ public class MainActivity extends ActionBarActivity {
             if(mLoggerBinder != null) {
                 if(mLoggerBinder.isRunning())
                     mLoggerBinder.stop();
-                else
-                    mLoggerBinder.start();
+                else if(mVehicleFragment != null)
+                    mLoggerBinder.start(mVehicleFragment.mModelText.getText().toString(),
+                            mVehicleFragment.mVINText.getText().toString(),
+                            mVehicleFragment.mNotesText.getText().toString());
             }
             return true;
         }
@@ -134,9 +192,9 @@ public class MainActivity extends ActionBarActivity {
         public Fragment getItem(int position) {
             switch(position) {
                 case FRAGMENT_VEHICLE:
-                    return new VehicleFragment();
+                    return mVehicleFragment = new VehicleFragment();
                 case FRAGMENT_RECORD:
-                    return new RecordFragment();
+                    return mRecordFragment = new RecordFragment();
                 case FRAGMENT_DATA:
                     return new DataFragment();
                 case FRAGMENT_LIVE:

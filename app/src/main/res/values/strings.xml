@@ -53,6 +53,6 @@
     <string name="export">Export</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
-    <string name="notification_titile">TestDrive is currently logging</string>
-
+    <string name="notification_title">TestDrive is currently logging</string>
+    <string name="google_play_unavailable">Google Play Services are unavailable, location logging will not work. Please update from Google Play.</string>
 </resources>

@@ -4,4 +4,5 @@
     <item android:id="@+id/action_start_stop" android:title="@string/start"
         android:orderInCategory="100" app:showAsAction="ifRoom"
         android:icon="@drawable/ic_play"/>
+
 </menu>
