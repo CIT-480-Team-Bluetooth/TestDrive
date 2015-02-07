@@ -35,7 +35,7 @@ public class LoggerService extends Service {
     private boolean mGooglePlayAvailable;
     private long mThisDriveId;
     private final AtomicBoolean mRunning = new AtomicBoolean(false);
-
+    private long mDriveStartTime;
 
     private static final int MESSAGE_START = 0;
     private static final int MESSAGE_STOP = 1;
@@ -75,7 +75,7 @@ public class LoggerService extends Service {
             drivesValues.put(Database.Contract.Drives.COLUMN_NAME_VIN, vin);
             drivesValues.put(Database.Contract.Drives.COLUMN_NAME_NOTES, notes);
             drivesValues.put(Database.Contract.Drives.COLUMN_NAME_START_TIME,
-                    System.currentTimeMillis());
+                    mDriveStartTime = System.currentTimeMillis());
 
             mThisDriveId = db.getWritableDatabase().insert(Database.Contract.Drives.TABLE_NAME,
                     null, drivesValues);
@@ -115,6 +115,10 @@ public class LoggerService extends Service {
 
         }
 
+        public long getDriveStartTime() {
+            return mDriveStartTime;
+        }
+
     }
 
     public void onCreate() {
@@ -152,6 +156,11 @@ public class LoggerService extends Service {
         public void setCallbacks(Callbacks cb) {
             mCallback = cb;
         }
+
+        public long getDriveStartTime() {
+            return mServiceHandler.getDriveStartTime();
+        }
+
 
     }
 

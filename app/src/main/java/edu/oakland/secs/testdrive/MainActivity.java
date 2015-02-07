@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.TextView;
 
 import junit.framework.Test;
 
@@ -41,6 +42,7 @@ public class MainActivity extends ActionBarActivity {
     private LoggerService.LoggerBinder mLoggerBinder;
     private MenuItem mStartStopMenuItem;
     private Timer mTimer;
+    private TextView mChronometer;
     private VehicleFragment mVehicleFragment;
     private RecordFragment mRecordFragment;
 
@@ -110,10 +112,14 @@ public class MainActivity extends ActionBarActivity {
             return;
         mStartStopMenuItem.setIcon(mLoggerBinder.isRunning() ?
                 R.drawable.ic_stop : R.drawable.ic_play);
+        mChronometer.setText("");
     }
 
     private static final int TIMESTAMP_UPDATE_RATE = 1000 / 20;
+    private static final int CHRONOMETER_UPDATE_RATE = 1000 / 2;
+    private static final int TIMESTAMP_CHRONOMETER_RATIO = CHRONOMETER_UPDATE_RATE / TIMESTAMP_UPDATE_RATE;
     private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
+    private int mChronometerCounter = 0;
 
     private void startTimer() {
         stopTimer();
@@ -123,12 +129,22 @@ public class MainActivity extends ActionBarActivity {
                 mTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        if(mRecordFragment.isVisible()) {
+                        if((mRecordFragment != null) && mRecordFragment.isVisible()) {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     mRecordFragment.mTimestampText.setText(
                                             new SimpleDateFormat(TIMESTAMP_FORMAT).format(new Date()));
+                                    if(++mChronometerCounter == TIMESTAMP_CHRONOMETER_RATIO) {
+                                        long elapsedTime = System.currentTimeMillis() - mLoggerBinder.getDriveStartTime();
+                                        long seconds = elapsedTime / 1000;
+                                        long hours = seconds / (60 * 60);
+                                        long minutesInHour = (seconds % (60 * 60)) / 60;
+                                        long secondsInMinute = seconds % 60;
+                                        mChronometer.setText(String.format("%d:%02d:%02d",
+                                                hours, minutesInHour, secondsInMinute));
+                                        mChronometerCounter = 0;
+                                    }
                                 }
                             });
                         }
@@ -145,11 +161,20 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    private static int CHRONOMETER_ID = 9191;
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
         mStartStopMenuItem = menu.findItem(R.id.action_start_stop);
+        mChronometer = new TextView(this);
+        mChronometer.setTextAppearance(this, R.style.Base_TextAppearance_AppCompat_Inverse);
+        mChronometer.setPadding(5, 0, 5, 0);
+        menu.add(0, CHRONOMETER_ID, 2, "Chronometer")
+                .setActionView(mChronometer).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
         syncStartStop();
         return true;
     }
