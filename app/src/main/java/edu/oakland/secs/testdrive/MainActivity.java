@@ -61,19 +61,20 @@ public class MainActivity extends ActionBarActivity {
 
         Intent loggerIntent = new Intent(this, LoggerService.class);
         startService(loggerIntent);
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Intent loggerIntent = new Intent(this, LoggerService.class);
         bindService(loggerIntent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        startTimer();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        stopTimer();
+    public void onStop() {
+        super.onStop();
+        unbindService(mConnection);
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -89,12 +90,9 @@ public class MainActivity extends ActionBarActivity {
                             syncStartStop();
                         }
                     });
-                    if(started)
-                        startTimer();
-                    else
-                        stopTimer();
                 }
             });
+            syncTimer();
         }
 
         @Override
@@ -113,6 +111,14 @@ public class MainActivity extends ActionBarActivity {
         mStartStopMenuItem.setIcon(mLoggerBinder.isRunning() ?
                 R.drawable.ic_stop : R.drawable.ic_play);
         mChronometer.setText("");
+        syncTimer();
+    }
+
+    private void syncTimer() {
+        if(mLoggerBinder != null && (mLoggerBinder.isRunning()))
+            startTimer();
+        else
+            stopTimer();
     }
 
     private static final int TIMESTAMP_UPDATE_RATE = 1000 / 20;
