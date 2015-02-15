@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -20,6 +21,7 @@ public class RecordFragment extends Fragment {
     public Spinner mVisibilitySpinner;
     public Spinner mTrafficSpinner;
     public TextView mTimestampText;
+    public Button mSaveButton;
 
     private ArrayAdapter<CharSequence> mWeatherAdapter;
     private ArrayAdapter<CharSequence> mRoadTypeAdapter;
@@ -66,6 +68,9 @@ public class RecordFragment extends Fragment {
         mTrafficSpinner.setAdapter(mTrafficAdapter);
 
         mTimestampText = (TextView)view.findViewById(R.id.timestamp_text);
+
+        mSaveButton = (Button)view.findViewById(R.id.saveButton);
+
     }
 
 }

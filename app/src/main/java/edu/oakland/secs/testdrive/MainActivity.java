@@ -43,8 +43,12 @@ public class MainActivity extends ActionBarActivity {
     private MenuItem mStartStopMenuItem;
     private Timer mTimer;
     private TextView mChronometer;
-    private VehicleFragment mVehicleFragment;
-    private RecordFragment mRecordFragment;
+
+    private VehicleFragment mVehicleFragment = new VehicleFragment();
+    private RecordFragment mRecordFragment = new RecordFragment();
+    private LiveFragment mLiveFragment = new LiveFragment();
+    private DataFragment mDataFragment = new DataFragment();
+    private ExportFragment mExportFragment = new ExportFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,16 +87,16 @@ public class MainActivity extends ActionBarActivity {
             mLoggerBinder = (LoggerService.LoggerBinder)service;
             mLoggerBinder.setCallbacks(new LoggerService.Callbacks() {
                 @Override
-                public void onStartStop(boolean started) {
+                public void onStartStop(final boolean started) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            syncStartStop();
+                            syncStartStop(started);
                         }
                     });
                 }
             });
-            syncTimer();
+            syncTimer(mLoggerBinder.isRunning());
         }
 
         @Override
@@ -105,17 +109,24 @@ public class MainActivity extends ActionBarActivity {
         return mLoggerBinder;
     }
 
-    private void syncStartStop() {
-        if(mLoggerBinder == null || mStartStopMenuItem == null)
+    private void syncStartStop(boolean started) {
+        if(mStartStopMenuItem == null)
             return;
-        mStartStopMenuItem.setIcon(mLoggerBinder.isRunning() ?
+
+        mStartStopMenuItem.setIcon(started ?
                 R.drawable.ic_stop : R.drawable.ic_play);
-        mChronometer.setText("");
-        syncTimer();
+
+        mRecordFragment.mSaveButton.setEnabled(started);
+
+        mVehicleFragment.mNotesText.setEnabled(!started);
+        mVehicleFragment.mVINText.setEnabled(!started);
+        mVehicleFragment.mModelText.setEnabled(!started);
+
+        syncTimer(started);
     }
 
-    private void syncTimer() {
-        if(mLoggerBinder != null && (mLoggerBinder.isRunning()))
+    private void syncTimer(boolean started) {
+        if(started)
             startTimer();
         else
             stopTimer();
@@ -181,7 +192,7 @@ public class MainActivity extends ActionBarActivity {
         menu.add(0, CHRONOMETER_ID, 2, "Chronometer")
                 .setActionView(mChronometer).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
-        syncStartStop();
+        syncStartStop(mLoggerBinder != null ? mLoggerBinder.isRunning() : false);
         return true;
     }
 
@@ -197,7 +208,7 @@ public class MainActivity extends ActionBarActivity {
             if(mLoggerBinder != null) {
                 if(mLoggerBinder.isRunning())
                     mLoggerBinder.stop();
-                else if(mVehicleFragment != null)
+                else
                     mLoggerBinder.start(mVehicleFragment.mModelText.getText().toString(),
                             mVehicleFragment.mVINText.getText().toString(),
                             mVehicleFragment.mNotesText.getText().toString());
@@ -223,15 +234,15 @@ public class MainActivity extends ActionBarActivity {
         public Fragment getItem(int position) {
             switch(position) {
                 case FRAGMENT_VEHICLE:
-                    return mVehicleFragment = new VehicleFragment();
+                    return mVehicleFragment;
                 case FRAGMENT_RECORD:
-                    return mRecordFragment = new RecordFragment();
+                    return mRecordFragment;
                 case FRAGMENT_DATA:
-                    return new DataFragment();
+                    return mDataFragment;
                 case FRAGMENT_LIVE:
-                    return new LiveFragment();
+                    return mLiveFragment;
                 case FRAGMENT_EXPORT:
-                    return new ExportFragment();
+                    return mExportFragment;
                 default:
                     return null;
             }
