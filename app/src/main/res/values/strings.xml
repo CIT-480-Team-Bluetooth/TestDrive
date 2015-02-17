@@ -55,4 +55,7 @@
     <string name="stop">Stop</string>
     <string name="notification_title">TestDrive is currently logging</string>
     <string name="google_play_unavailable">Google Play Services are unavailable, location logging will not work. Please update from Google Play.</string>
+    <string name="saved">Saved!</string>
+    <string name="copy_db">Copy database to external storage</string>
+    <string name="copied_db">Copied database to %1$s</string>
 </resources>

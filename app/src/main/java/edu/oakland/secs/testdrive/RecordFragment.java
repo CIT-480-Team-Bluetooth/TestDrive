@@ -71,6 +71,23 @@ public class RecordFragment extends Fragment {
 
         mSaveButton = (Button)view.findViewById(R.id.saveButton);
 
+        mSaveButton.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity activity = (MainActivity)getActivity();
+                LoggerService.LoggerBinder binder = activity.getLoggerInterface();
+                if(binder != null) {
+                    binder.log(mWeatherSpinner.getSelectedItemPosition() + 1,
+                            mRoadTypeSpinner.getSelectedItemPosition() + 1,
+                            mRoadConditionSpinner.getSelectedItemPosition() + 1,
+                            mVisibilitySpinner.getSelectedItemPosition() + 1,
+                            mTrafficSpinner.getSelectedItemPosition() + 1);
+                }
+            }
+        });
+
     }
+
+
 
 }

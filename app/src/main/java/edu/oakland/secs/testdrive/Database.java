@@ -172,4 +172,10 @@ public class Database extends SQLiteOpenHelper {
         }
     }
 
+    public static final String GET_DRIVES_AND_ENTRIES_SQL = "SELECT * FROM " +
+            Contract.Drives.TABLE_NAME + " LEFT JOIN " +
+            Contract.Entries.TABLE_NAME + " ON " +
+            Contract.Drives.TABLE_NAME + "." + Contract.Drives._ID + " = " +
+            Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_DRIVE;
+
 }

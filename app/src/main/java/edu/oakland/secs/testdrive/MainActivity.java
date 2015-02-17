@@ -79,6 +79,8 @@ public class MainActivity extends ActionBarActivity {
     public void onStop() {
         super.onStop();
         unbindService(mConnection);
+        mLoggerBinder = null;
+        syncTimer(false);
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -96,12 +98,13 @@ public class MainActivity extends ActionBarActivity {
                     });
                 }
             });
-            syncTimer(mLoggerBinder.isRunning());
+            syncStartStop(mLoggerBinder.isRunning());
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mLoggerBinder = null;
+            syncTimer(false);
         }
     };
 
@@ -193,6 +196,7 @@ public class MainActivity extends ActionBarActivity {
                 .setActionView(mChronometer).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         syncStartStop(mLoggerBinder != null ? mLoggerBinder.isRunning() : false);
+
         return true;
     }
 
