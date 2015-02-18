@@ -40,6 +40,7 @@ public class LoggerService extends Service {
     private final AtomicBoolean mRunning = new AtomicBoolean(false);
     private long mDriveStartTime;
     private GoogleApiClient mGoogleApiClient;
+    private Database mDatabase;
 
     private static final int MESSAGE_START = 0;
     private static final int MESSAGE_STOP = 1;
@@ -62,8 +63,6 @@ public class LoggerService extends Service {
         public ServiceHandler(Looper looper) {
             super(looper);
         }
-
-        private Database db;
 
         public void handleMessage(Message msg) {
             switch(msg.what) {
@@ -109,18 +108,17 @@ public class LoggerService extends Service {
                 }
             }
 
-            if(db.getWritableDatabase().insert(Database.Contract.Entries.TABLE_NAME, null,
-                    entry) == -1) {
-                //TODO: Figure out what to do when there's an error saving
-            }
-            else if(showConfirmation) {
-                Toast.makeText(LoggerService.this, R.string.saved, Toast.LENGTH_SHORT).show();
+            synchronized (mDatabase) {
+                if (mDatabase.getWritableDatabase().insert(Database.Contract.Entries.TABLE_NAME, null,
+                        entry) == -1) {
+                    //TODO: Figure out what to do when there's an error saving
+                } else if (showConfirmation) {
+                    Toast.makeText(LoggerService.this, R.string.saved, Toast.LENGTH_SHORT).show();
+                }
             }
         }
 
         private void start(String model, String vin, String notes) {
-
-            db = new Database(LoggerService.this);
 
             ContentValues drivesValues = new ContentValues();
             drivesValues.put(Database.Contract.Drives.COLUMN_NAME_MODEL, model);
@@ -129,8 +127,10 @@ public class LoggerService extends Service {
             drivesValues.put(Database.Contract.Drives.COLUMN_NAME_START_TIME,
                     mDriveStartTime = System.currentTimeMillis());
 
-            mThisDriveId = db.getWritableDatabase().insert(Database.Contract.Drives.TABLE_NAME,
-                    null, drivesValues);
+            synchronized(mDatabase) {
+                mThisDriveId = mDatabase.getWritableDatabase().insert(Database.Contract.Drives.TABLE_NAME,
+                        null, drivesValues);
+            }
 
             if( GooglePlayServicesUtil.isGooglePlayServicesAvailable(LoggerService.this) == ConnectionResult.SUCCESS) {
                 mGoogleApiClient = new GoogleApiClient.Builder(LoggerService.this)
@@ -199,6 +199,9 @@ public class LoggerService extends Service {
     }
 
     public void onCreate() {
+
+        mDatabase = new Database(this);
+
         HandlerThread thread = new HandlerThread("ServiceStartArguments",
                 Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
@@ -248,6 +251,10 @@ public class LoggerService extends Service {
             msg.getData().putInt(DATA_TRAFFIC, traffic);
             msg.what = MESSAGE_LOG;
             mServiceHandler.sendMessage(msg);
+        }
+
+        public Database getDatabase() {
+            return mDatabase;
         }
 
     }
