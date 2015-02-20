@@ -119,12 +119,6 @@ public class MainActivity extends ActionBarActivity {
         mStartStopMenuItem.setIcon(started ?
                 R.drawable.ic_stop : R.drawable.ic_play);
 
-        mRecordFragment.mSaveButton.setEnabled(started);
-
-        mVehicleFragment.mNotesText.setEnabled(!started);
-        mVehicleFragment.mVINText.setEnabled(!started);
-        mVehicleFragment.mModelText.setEnabled(!started);
-
         syncTimer(started);
     }
 
@@ -149,25 +143,24 @@ public class MainActivity extends ActionBarActivity {
                 mTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        if((mRecordFragment != null) && mRecordFragment.isVisible()) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mRecordFragment.mTimestampText.setText(
-                                            new SimpleDateFormat(TIMESTAMP_FORMAT).format(new Date()));
-                                    if(++mChronometerCounter == TIMESTAMP_CHRONOMETER_RATIO) {
-                                        long elapsedTime = System.currentTimeMillis() - mLoggerBinder.getDriveStartTime();
-                                        long seconds = elapsedTime / 1000;
-                                        long hours = seconds / (60 * 60);
-                                        long minutesInHour = (seconds % (60 * 60)) / 60;
-                                        long secondsInMinute = seconds % 60;
-                                        mChronometer.setText(String.format("%d:%02d:%02d",
-                                                hours, minutesInHour, secondsInMinute));
-                                        mChronometerCounter = 0;
-                                    }
-                                }
-                            });
-                        }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                            if(mRecordFragment != null && mRecordFragment.mTimestampText != null)
+                                mRecordFragment.mTimestampText.setText(
+                                    new SimpleDateFormat(TIMESTAMP_FORMAT).format(new Date()));
+                            if(++mChronometerCounter == TIMESTAMP_CHRONOMETER_RATIO) {
+                                long elapsedTime = System.currentTimeMillis() - mLoggerBinder.getDriveStartTime();
+                                long seconds = elapsedTime / 1000;
+                                long hours = seconds / (60 * 60);
+                                long minutesInHour = (seconds % (60 * 60)) / 60;
+                                long secondsInMinute = seconds % 60;
+                                mChronometer.setText(String.format("%d:%02d:%02d",
+                                        hours, minutesInHour, secondsInMinute));
+                                mChronometerCounter = 0;
+                            }
+                            }
+                        });
                     }
                 }, TIMESTAMP_UPDATE_RATE, TIMESTAMP_UPDATE_RATE);
             }

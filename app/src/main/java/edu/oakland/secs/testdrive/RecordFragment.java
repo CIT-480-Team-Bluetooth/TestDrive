@@ -13,7 +13,7 @@ import android.widget.TextView;
 /**
  * Created by jeffq on 2/5/2015.
  */
-public class RecordFragment extends Fragment {
+public class RecordFragment extends TestDriveFragment {
 
     public Spinner mWeatherSpinner;
     public Spinner mRoadTypeSpinner;
@@ -88,6 +88,8 @@ public class RecordFragment extends Fragment {
 
     }
 
-
+    public void syncStartStop(boolean started) {
+        mSaveButton.setEnabled(started);
+    }
 
 }

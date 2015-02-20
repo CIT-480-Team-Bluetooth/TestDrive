@@ -10,7 +10,7 @@ import android.widget.TextView;
 /**
  * Created by jeffq on 2/5/2015.
  */
-public class VehicleFragment extends Fragment  {
+public class VehicleFragment extends TestDriveFragment  {
 
     public TextView mModelText;
     public TextView mVINText;
@@ -27,5 +27,11 @@ public class VehicleFragment extends Fragment  {
         mModelText = (TextView)view.findViewById(R.id.model_text);
         mVINText = (TextView)view.findViewById(R.id.vin_text);
         mNotesText = (TextView)view.findViewById(R.id.notes_text);
+    }
+
+    public void syncStartStop(boolean started) {
+        mModelText.setEnabled(!started);
+        mVINText.setEnabled(!started);
+        mNotesText.setEnabled(!started);
     }
 }
