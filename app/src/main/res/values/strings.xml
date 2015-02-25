@@ -58,4 +58,14 @@
     <string name="saved">Saved!</string>
     <string name="copy_db">Copy database to external storage</string>
     <string name="copied_db">Copied database to %1$s</string>
+    <string name="drive_started_entry">New drive started at %1$s</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <string name="about_text">
+        TestDrive is a product of Oakland University, Rochester, MI, USA.\n\n
+        Team members: Jeffrey Quesnelle, Hubert Wolski, Yaseen Syed, Safayat Amin, Alex Galan\n\n
+        Creative Commons attributions:\n
+        Car icon: Icon made by http://www.icons8.com, from http://www.flaticon.com, under CC BY 3.0\n
+        Cloud icon: Icon made by http://www.freepik.com, from http://www.flaticon.com CC BY 3.0
+    </string>
 </resources>

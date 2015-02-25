@@ -3,10 +3,16 @@ package edu.oakland.secs.testdrive;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +20,7 @@ import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
@@ -30,8 +37,9 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
     private SupportMapFragment mMapFragment;
     private GoogleMap mMap;
     private LinearLayout mLinearLayout;
-    private ListView mHistory;
+    private RecyclerView mHistory;
     private DataAdapter mDataAdapter;
+    private LinearLayoutManager mLayoutManager;
 
     /* Saved through view being destroyed and recreated */
     private CameraPosition mCameraPosition;
@@ -40,6 +48,15 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_data, container, false);
+    }
+
+    private void makeHistoryView(LinearLayout.LayoutParams params) {
+        mHistory = new RecyclerView(getActivity());
+        mHistory.setLayoutParams(params);
+        mHistory.setHasFixedSize(true);
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mHistory.setLayoutManager(mLayoutManager);
+        mLinearLayout.addView(mHistory);
     }
 
     @Override
@@ -55,9 +72,7 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
                     ViewGroup.LayoutParams.MATCH_PARENT);
             params.weight = 2;
 
-            mHistory = new ListView(getActivity());
-            mHistory.setLayoutParams(params);
-            mLinearLayout.addView(mHistory);
+            makeHistoryView(params);
         }
 
         GoogleMapOptions mapOptions = new GoogleMapOptions();
@@ -85,11 +100,8 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
             params.weight = 1;
             mMapFragment.getView().setLayoutParams(params);
 
-            mHistory = new ListView(getActivity());
             params.weight = 1;
-            mHistory.setLayoutParams(params);
-            mLinearLayout.addView(mHistory);
-
+            makeHistoryView(params);
         }
         else {
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -97,6 +109,8 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
             params.weight = 1;
             mMapFragment.getView().setLayoutParams(params);
         }
+
+        setAdapter();
 
     }
 
@@ -112,6 +126,7 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
 
                 Database db = binder.getDatabase();
                 synchronized(db) {
+                    Log.e("TestDrive", Database.GET_DRIVES_AND_ENTRIES_SQL);
                     return db.getReadableDatabase().rawQuery(Database.GET_DRIVES_AND_ENTRIES_SQL, null);
                 }
 
@@ -120,7 +135,7 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
             @Override
             protected void onPostExecute(Cursor cursor) {
                 if(mHistory != null && cursor != null) {
-                    mHistory.setAdapter(mDataAdapter = new DataAdapter(getActivity(), cursor, 0));
+                    mHistory.setAdapter(mDataAdapter = new DataAdapter(getActivity(), cursor));
                 }
             }
 
@@ -142,20 +157,5 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
         mHistory = null;
     }
 
-    private class DataAdapter extends CursorAdapter {
 
-        public DataAdapter(Context context, Cursor c, int flags) {
-            super(context, c, flags);
-        }
-
-        @Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            return null;
-        }
-
-        @Override
-        public void bindView(View view, Context context, Cursor cursor) {
-
-        }
-    }
 }

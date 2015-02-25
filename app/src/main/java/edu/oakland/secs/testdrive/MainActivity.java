@@ -2,6 +2,7 @@ package edu.oakland.secs.testdrive;
 
 import android.app.Activity;
 
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -46,7 +47,6 @@ public class MainActivity extends ActionBarActivity {
 
     private VehicleFragment mVehicleFragment = new VehicleFragment();
     private RecordFragment mRecordFragment = new RecordFragment();
-    private LiveFragment mLiveFragment = new LiveFragment();
     private DataFragment mDataFragment = new DataFragment();
     private ExportFragment mExportFragment = new ExportFragment();
 
@@ -59,8 +59,7 @@ public class MainActivity extends ActionBarActivity {
         mViewPager.setAdapter(new TestDrivePageAdapter(getSupportFragmentManager()));
 
         mSlidingTabLayout = (SlidingTabLayout) findViewById(R.id.sliding_tabs);
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
-            mSlidingTabLayout.setDistributeEvenly(true);
+        mSlidingTabLayout.setDistributeEvenly(true);
         mSlidingTabLayout.setViewPager(mViewPager);
 
         Intent loggerIntent = new Intent(this, LoggerService.class);
@@ -195,12 +194,8 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_start_stop) {
             if(mLoggerBinder != null) {
                 if(mLoggerBinder.isRunning())
@@ -212,15 +207,18 @@ public class MainActivity extends ActionBarActivity {
             }
             return true;
         }
+        else if(id == R.id.action_about) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.app_name).setMessage(R.string.about_text).create().show();
+        }
 
         return super.onOptionsItemSelected(item);
     }
 
     public static final int FRAGMENT_VEHICLE = 0;
     public static final int FRAGMENT_RECORD = 1;
-    public static final int FRAGMENT_LIVE = 2;
-    public static final int FRAGMENT_DATA = 3;
-    public static final int FRAGMENT_EXPORT = 4;
+    public static final int FRAGMENT_DATA = 2;
+    public static final int FRAGMENT_EXPORT = 3;
 
     public class TestDrivePageAdapter extends FragmentPagerAdapter {
 
@@ -236,8 +234,6 @@ public class MainActivity extends ActionBarActivity {
                     return mRecordFragment;
                 case FRAGMENT_DATA:
                     return mDataFragment;
-                case FRAGMENT_LIVE:
-                    return mLiveFragment;
                 case FRAGMENT_EXPORT:
                     return mExportFragment;
                 default:
@@ -246,7 +242,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         public int getCount() {
-            return 5;
+            return 4;
         }
 
         public CharSequence getPageTitle(int position) {
@@ -257,8 +253,6 @@ public class MainActivity extends ActionBarActivity {
                     return getString(R.string.record);
                 case FRAGMENT_DATA:
                     return getString(R.string.data);
-                case FRAGMENT_LIVE:
-                    return getString(R.string.live);
                 case FRAGMENT_EXPORT:
                     return getString(R.string.export);
                 default:

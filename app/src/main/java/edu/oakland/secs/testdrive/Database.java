@@ -172,10 +172,25 @@ public class Database extends SQLiteOpenHelper {
         }
     }
 
-    public static final String GET_DRIVES_AND_ENTRIES_SQL = "SELECT * FROM " +
-            Contract.Drives.TABLE_NAME + " LEFT JOIN " +
-            Contract.Entries.TABLE_NAME + " ON " +
-            Contract.Drives.TABLE_NAME + "." + Contract.Drives._ID + " = " +
-            Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_DRIVE;
+    public static final String GET_DRIVES_AND_ENTRIES_SQL = "SELECT " +
+            Contract.Drives.TABLE_NAME + "." + Contract.Drives._ID + ", " +
+            Contract.Entries.TABLE_NAME + "." + Contract.Entries._ID + " AS " +
+            "'" + Contract.Entries.TABLE_NAME + Contract.Entries._ID + "', " +
+            Contract.Drives.TABLE_NAME + "." + Contract.Drives.COLUMN_NAME_START_TIME + ", " +
+            Contract.Drives.TABLE_NAME + "." + Contract.Drives.COLUMN_NAME_END_TIME + ", " +
+            Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_TIME + ", " +
+            Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_WEATHER_CONDITION + ", " +
+            Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_ROAD_TYPE + ", " +
+            Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_ROAD_CONDITION + ", " +
+            Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_VISIBILITY + ", " +
+            Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_TRAFFIC_CONGESTION + ", " +
+            Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_LATITUDE + ", " +
+            Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_LONGITUDE + ", " +
+            Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_SPEED + ", " +
+            Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_BEARING  +
+            " FROM " + Contract.Drives.TABLE_NAME + " LEFT JOIN " + Contract.Entries.TABLE_NAME +
+            " ON " + Contract.Drives.TABLE_NAME + "." + Contract.Drives._ID +
+            " = " + Contract.Entries.TABLE_NAME + "." + Contract.Entries.COLUMN_NAME_DRIVE;
+
 
 }
