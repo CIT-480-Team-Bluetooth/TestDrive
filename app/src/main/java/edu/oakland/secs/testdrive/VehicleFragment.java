@@ -30,8 +30,11 @@ public class VehicleFragment extends TestDriveFragment  {
     }
 
     public void syncStartStop(boolean started) {
-        mModelText.setEnabled(!started);
-        mVINText.setEnabled(!started);
-        mNotesText.setEnabled(!started);
+        if(mModelText != null)
+            mModelText.setEnabled(!started);
+        if(mVINText != null)
+            mVINText.setEnabled(!started);
+        if(mNotesText != null)
+            mNotesText.setEnabled(!started);
     }
 }

@@ -89,7 +89,8 @@ public class RecordFragment extends TestDriveFragment {
     }
 
     public void syncStartStop(boolean started) {
-        mSaveButton.setEnabled(started);
+        if(mSaveButton != null)
+            mSaveButton.setEnabled(started);
     }
 
 }

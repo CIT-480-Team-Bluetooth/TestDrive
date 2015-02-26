@@ -23,6 +23,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
 import junit.framework.Test;
@@ -36,7 +38,7 @@ import java.util.TimerTask;
  * Main activity that holds the entire app
  *
  */
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements ViewPager.OnPageChangeListener {
 
     private SlidingTabLayout mSlidingTabLayout;
     private ViewPager mViewPager;
@@ -57,10 +59,12 @@ public class MainActivity extends ActionBarActivity {
 
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
         mViewPager.setAdapter(new TestDrivePageAdapter(getSupportFragmentManager()));
+        mViewPager.setOnPageChangeListener(this);
 
         mSlidingTabLayout = (SlidingTabLayout) findViewById(R.id.sliding_tabs);
         mSlidingTabLayout.setDistributeEvenly(true);
         mSlidingTabLayout.setViewPager(mViewPager);
+
 
         Intent loggerIntent = new Intent(this, LoggerService.class);
         startService(loggerIntent);
@@ -119,6 +123,13 @@ public class MainActivity extends ActionBarActivity {
                 R.drawable.ic_stop : R.drawable.ic_play);
 
         syncTimer(started);
+
+        if(mVehicleFragment != null)
+            mVehicleFragment.syncStartStop(started);
+        if(mRecordFragment != null)
+            mRecordFragment.syncStartStop(started);
+        if(mExportFragment != null)
+            mExportFragment.syncStartStop(started);
     }
 
     private void syncTimer(boolean started) {
@@ -219,6 +230,25 @@ public class MainActivity extends ActionBarActivity {
     public static final int FRAGMENT_RECORD = 1;
     public static final int FRAGMENT_DATA = 2;
     public static final int FRAGMENT_EXPORT = 3;
+
+    private void hideSoftKeyBoard() {
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        hideSoftKeyBoard();
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        hideSoftKeyBoard();
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
+    }
 
     public class TestDrivePageAdapter extends FragmentPagerAdapter {
 

@@ -6,7 +6,9 @@
     android:layout_height="wrap_content"
     android:id="@+id/data_entry_card"
     card_view:cardCornerRadius="2dp"
-    android:layout_margin="5dp">
+    android:layout_margin="5dp"
+    android:clickable="true"
+    android:foreground="?android:attr/selectableItemBackground">
 
     <RelativeLayout
         android:layout_width="match_parent"

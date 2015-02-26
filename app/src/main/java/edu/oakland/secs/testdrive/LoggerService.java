@@ -23,8 +23,11 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
@@ -41,7 +44,8 @@ public class LoggerService extends Service {
     private final AtomicBoolean mRunning = new AtomicBoolean(false);
     private long mDriveStartTime;
     private GoogleApiClient mGoogleApiClient;
-    private Database mDatabase;
+    private final Database mDatabase = new Database(this);
+    private Location mLastLocation;
 
     private static final int MESSAGE_START = 0;
     private static final int MESSAGE_STOP = 1;
@@ -60,7 +64,7 @@ public class LoggerService extends Service {
 
 
     private final class ServiceHandler extends Handler implements GoogleApiClient.ConnectionCallbacks,
-            GoogleApiClient.OnConnectionFailedListener {
+            GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
         public ServiceHandler(Looper looper) {
             super(looper);
@@ -99,18 +103,13 @@ public class LoggerService extends Service {
             entry.put(Database.Contract.Entries.COLUMN_NAME_VISIBILITY, visibility);
             entry.put(Database.Contract.Entries.COLUMN_NAME_TRAFFIC_CONGESTION, traffic);
 
-            if(mGoogleApiClient != null) {
-                if(mGoogleApiClient.isConnected()) {
-                    Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-                    if(location != null) {
-                        entry.put(Database.Contract.Entries.COLUMN_NAME_LATITUDE, location.getLatitude());
-                        entry.put(Database.Contract.Entries.COLUMN_NAME_LONGITUDE, location.getLongitude());
-                        if(location.hasBearing())
-                            entry.put(Database.Contract.Entries.COLUMN_NAME_BEARING, location.getBearing());
-                        if(location.hasSpeed())
-                            entry.put(Database.Contract.Entries.COLUMN_NAME_SPEED, location.getSpeed());
-                    }
-                }
+            if(mLastLocation != null) {
+                entry.put(Database.Contract.Entries.COLUMN_NAME_LATITUDE, mLastLocation.getLatitude());
+                entry.put(Database.Contract.Entries.COLUMN_NAME_LONGITUDE, mLastLocation.getLongitude());
+                if(mLastLocation.hasBearing())
+                    entry.put(Database.Contract.Entries.COLUMN_NAME_BEARING, mLastLocation.getBearing());
+                if(mLastLocation.hasSpeed())
+                    entry.put(Database.Contract.Entries.COLUMN_NAME_SPEED, mLastLocation.getSpeed());
             }
 
             synchronized (mDatabase) {
@@ -146,7 +145,7 @@ public class LoggerService extends Service {
                 mGoogleApiClient.connect();
             }
             else {
-                Toast.makeText(LoggerService.this, R.string.google_play_unavailable, Toast.LENGTH_LONG);
+                Toast.makeText(LoggerService.this, R.string.google_play_unavailable, Toast.LENGTH_LONG).show();
             }
 
             NotificationManager nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
@@ -172,6 +171,7 @@ public class LoggerService extends Service {
             mRunning.set(false);
 
             if(mGoogleApiClient != null) {
+                stopLocationUpdates();
                 if(mGoogleApiClient.isConnected())
                     mGoogleApiClient.disconnect();
                 mGoogleApiClient = null;
@@ -179,6 +179,8 @@ public class LoggerService extends Service {
 
             if(mCallback != null)
                 mCallback.onStartStop(false);
+
+            mLastLocation = null;
 
         }
 
@@ -199,7 +201,7 @@ public class LoggerService extends Service {
 
         @Override
         public void onConnected(Bundle connectionHint) {
-
+            startLocationUpdates();
         }
 
         @Override
@@ -212,11 +214,30 @@ public class LoggerService extends Service {
 
         }
 
+        private static final int LOCATION_UPDATE_INTERVAL = 1000;
+        private static final int LOCATION_UPDATE_FASTEST_INTERVAL = 100;
+        private static final int LOCATION_UPDATE_PRIORITY = LocationRequest.PRIORITY_HIGH_ACCURACY;
+
+        private void startLocationUpdates() {
+            LocationRequest locationRequest = new LocationRequest();
+            locationRequest.setInterval(LOCATION_UPDATE_INTERVAL);
+            locationRequest.setFastestInterval(LOCATION_UPDATE_FASTEST_INTERVAL);
+            locationRequest.setPriority(LOCATION_UPDATE_PRIORITY);
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
+        }
+
+        private void stopLocationUpdates() {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        }
+
+
+        @Override
+        public void onLocationChanged(Location location) {
+            mLastLocation = location;
+        }
     }
 
     public void onCreate() {
-
-        mDatabase = new Database(this);
 
         HandlerThread thread = new HandlerThread("ServiceStartArguments",
                 Process.THREAD_PRIORITY_BACKGROUND);

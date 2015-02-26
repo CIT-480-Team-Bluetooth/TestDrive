@@ -1,19 +1,20 @@
 package edu.oakland.secs.testdrive;
 
-import android.content.Context;
 import android.database.Cursor;
-import android.os.Environment;
-import android.provider.ContactsContract;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,18 +30,20 @@ public class DataAdapter extends RecyclerView.Adapter {
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
+        public CardView mCardView;
         public TextView mDataEntryText;
         public ImageView mDataEntryImage;
 
         public ViewHolder(View v) {
             super(v);
+            mCardView = (CardView)v;
             mDataEntryText = (TextView)v.findViewById(R.id.data_entry_text);
             mDataEntryImage = (ImageView)v.findViewById(R.id.data_entry_image);
         }
     }
 
     private Cursor mCursor;
-    private Context mContext;
+    private DataFragment mFragment;
 
     private final int START_TIME_INDEX;
     private final int TIME_INDEX;
@@ -63,15 +66,15 @@ public class DataAdapter extends RecyclerView.Adapter {
 
     private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-    public DataAdapter(Context context, Cursor c) {
+    public DataAdapter(DataFragment context, Cursor c) {
         mCursor = c;
-        mContext = context;
+        mFragment = context;
         START_TIME_INDEX = c.getColumnIndex(Database.Contract.Drives.COLUMN_NAME_START_TIME);
         TIME_INDEX = c.getColumnIndex(Database.Contract.Entries.COLUMN_NAME_TIME);
         WEATHER_CONDITION_INDEX = c.getColumnIndex(Database.Contract.Entries.COLUMN_NAME_WEATHER_CONDITION);
         ROAD_TYPE_INDEX = c.getColumnIndex(Database.Contract.Entries.COLUMN_NAME_ROAD_TYPE);
         ROAD_CONDITION_INDEX = c.getColumnIndex(Database.Contract.Entries.COLUMN_NAME_ROAD_CONDITION);
-        VISIBILITY_INDEX = c.getColumnIndex(Database.Contract.Entries.COLUMN_NAME_TRAFFIC_CONGESTION);
+        VISIBILITY_INDEX = c.getColumnIndex(Database.Contract.Entries.COLUMN_NAME_VISIBILITY);
         TRAFFIC_CONGESTION_INDEX = c.getColumnIndex(Database.Contract.Entries.COLUMN_NAME_TRAFFIC_CONGESTION);
         LATITUDE_INDEX = c.getColumnIndex(Database.Contract.Entries.COLUMN_NAME_LATITUDE);
         LONGITUDE_INDEX = c.getColumnIndex(Database.Contract.Entries.COLUMN_NAME_LONGITUDE);
@@ -125,7 +128,7 @@ public class DataAdapter extends RecyclerView.Adapter {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int i) {
-        ViewHolder holder = (ViewHolder)viewHolder;
+        final ViewHolder holder = (ViewHolder)viewHolder;
 
         int previousDriveId = -2, currentDriveId = -1;
 
@@ -139,7 +142,7 @@ public class DataAdapter extends RecyclerView.Adapter {
 
         if(previousDriveId != currentDriveId) {
             /* start of drive */
-            holder.mDataEntryText.setText(mContext.getString(R.string.drive_started_entry, new SimpleDateFormat(TIMESTAMP_FORMAT)
+            holder.mDataEntryText.setText(mFragment.getString(R.string.drive_started_entry, new SimpleDateFormat(TIMESTAMP_FORMAT)
                     .format(new Date(mCursor.getLong(START_TIME_INDEX)))));
             holder.mDataEntryImage.setImageResource(R.drawable.car95);
         }
@@ -171,23 +174,21 @@ public class DataAdapter extends RecyclerView.Adapter {
                 String changeName = null;
                 int changeNameIndex = mIndexToString.get(pair.getKey(), -1);
                 if(changeNameIndex != -1)
-                    changeName = mContext.getString(changeNameIndex);
-
-                if(!first) {
-                    builder.append(mContext.getString(R.string.value_changed_separator));
-                    if(changeName != null) {
-                        if(isEnglish)
-                            changeName = changeName.substring(0,1).toLowerCase() + changeName.substring(1);
-                    }
-                }
+                    changeName = mFragment.getString(changeNameIndex);
 
                 if(changeName == null)
                     continue;
 
-                String changedValue = mContext.getResources()
+                if(!first) {
+                    builder.append(mFragment.getString(R.string.value_changed_separator));
+                    if(isEnglish)
+                        changeName = changeName.substring(0,1).toLowerCase() + changeName.substring(1);
+                }
+
+                String changedValue = mFragment.getResources()
                         .getStringArray(mIndexToArray.get(pair.getKey()))
                         [Integer.valueOf(pair.getValue().second) - 1];
-                builder.append(mContext.getString(R.string.value_changed, changeName, changedValue));
+                builder.append(mFragment.getString(R.string.value_changed, changeName, changedValue));
 
                 first = false;
             }
@@ -195,20 +196,48 @@ public class DataAdapter extends RecyclerView.Adapter {
             int imageIndex = android.R.color.transparent;
 
             if(diffMap.isEmpty())
-                builder.append(mContext.getString(R.string.nothing_changed));
+                builder.append(mFragment.getString(R.string.nothing_changed));
             else {
                 if(first) {
                     /* only location changes */
-                    builder.append(mContext.getString(R.string.location_updated));
+                    builder.append(mFragment.getString(R.string.location_updated));
                 }
                 int firstDiffIndex = diffMap.keySet().iterator().next().intValue();
                 imageIndex = mIndexToImage.get(firstDiffIndex);
             }
-            builder.append(mContext.getString(R.string.value_changed_ending));
+            builder.append(mFragment.getString(R.string.value_changed_ending));
 
             holder.mDataEntryImage.setImageResource(imageIndex);
             holder.mDataEntryText.setText(builder.toString());
 
+        }
+
+        if(!mCursor.isNull(LATITUDE_INDEX) && !mCursor.isNull(LONGITUDE_INDEX)) {
+            holder.mCardView.setClickable(true);
+            holder.mCardView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    double latitude = mCursor.getDouble(LATITUDE_INDEX);
+                    double longitude = mCursor.getDouble(LONGITUDE_INDEX);
+
+                    LatLng latLng = new LatLng(latitude, longitude);
+
+                    mFragment.mMap.addMarker(new MarkerOptions()
+                            .position(latLng)
+                            .title(holder.mDataEntryText.getText().toString()));
+                    /**
+                     * Zooming past level 14 will crash the Lollipop x86 emulator
+                     * https://code.google.com/p/android/issues/detail?id=82997
+                     */
+                    mFragment.mMap.animateCamera(CameraUpdateFactory
+                            .newCameraPosition(new CameraPosition.Builder().target(latLng)
+                                    .zoom(15.5f).bearing(0).tilt(0).build()));
+                }
+            });
+        }
+        else {
+            holder.mCardView.setClickable(false);
+            holder.mCardView.setOnClickListener(null);
         }
 
     }

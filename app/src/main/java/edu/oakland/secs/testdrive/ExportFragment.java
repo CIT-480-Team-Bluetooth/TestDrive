@@ -105,6 +105,7 @@ public class ExportFragment extends TestDriveFragment {
 
     @Override
     public void syncStartStop(boolean started) {
-        mClearDBButton.setEnabled(!started);
+        if(mClearDBButton != null)
+            mClearDBButton.setEnabled(!started);
     }
 }

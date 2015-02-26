@@ -35,7 +35,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 public class DataFragment extends Fragment implements OnMapReadyCallback {
 
     private SupportMapFragment mMapFragment;
-    private GoogleMap mMap;
+    public GoogleMap mMap;
     private LinearLayout mLinearLayout;
     private RecyclerView mHistory;
     private DataAdapter mDataAdapter;
@@ -110,6 +110,8 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
             mMapFragment.getView().setLayoutParams(params);
         }
 
+        mMap.setMyLocationEnabled(true);
+
         setAdapter();
 
     }
@@ -126,7 +128,6 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
 
                 Database db = binder.getDatabase();
                 synchronized(db) {
-                    Log.e("TestDrive", Database.GET_DRIVES_AND_ENTRIES_SQL);
                     return db.getReadableDatabase().rawQuery(Database.GET_DRIVES_AND_ENTRIES_SQL, null);
                 }
 
@@ -135,7 +136,7 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
             @Override
             protected void onPostExecute(Cursor cursor) {
                 if(mHistory != null && cursor != null) {
-                    mHistory.setAdapter(mDataAdapter = new DataAdapter(getActivity(), cursor));
+                    mHistory.setAdapter(mDataAdapter = new DataAdapter(DataFragment.this, cursor));
                 }
             }
 
