@@ -37,7 +37,7 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
     private SupportMapFragment mMapFragment;
     public GoogleMap mMap;
     private LinearLayout mLinearLayout;
-    private RecyclerView mHistory;
+    public RecyclerView mHistory;
     private DataAdapter mDataAdapter;
     private LinearLayoutManager mLayoutManager;
 

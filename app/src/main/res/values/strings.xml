@@ -84,4 +84,9 @@
     <string name="nothing_changed">Nothing changed</string>
     <string name="clear_database">Clear database</string>
     <string name="database_cleared">Database cleared!</string>
+    <string name="delete_drive">Delete this drive and ALL entrties associated with it?</string>
+    <string name="confirm_deletion">Confirm deletion</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="delete_entry">Delete this entry?</string>
 </resources>

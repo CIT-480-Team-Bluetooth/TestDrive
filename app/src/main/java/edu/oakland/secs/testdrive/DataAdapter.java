@@ -1,5 +1,7 @@
 package edu.oakland.secs.testdrive;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.CardView;
@@ -19,9 +21,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by jeffq on 2/25/2015.
@@ -117,6 +121,80 @@ public class DataAdapter extends RecyclerView.Adapter {
         mIndexToArray.put(VISIBILITY_INDEX, R.array.visibility_items);
         mIndexToArray.put(TRAFFIC_CONGESTION_INDEX, R.array.traffic_items);
 
+        SwipeableRecyclerViewTouchListener swipeTouchListener =
+                new SwipeableRecyclerViewTouchListener(mFragment.mHistory, new SwipeableRecyclerViewTouchListener.SwipeListener() {
+                    @Override
+                    public boolean canSwipe(int position) {
+                        return true;
+                    }
+
+                    @Override
+                    public void onDismissedBySwipeLeft(RecyclerView recyclerView, int[] reverseSortedPositions) {
+                        onDismissed(recyclerView, reverseSortedPositions);
+                    }
+
+                    @Override
+                    public void onDismissedBySwipeRight(RecyclerView recyclerView, int[] reverseSortedPositions) {
+                        onDismissed(recyclerView, reverseSortedPositions);
+                    }
+
+                    private void onDismissed(RecyclerView recyclerView, int[] reverseSortedPositions) {
+                        for(int position: reverseSortedPositions)
+                            dismiss(position);
+                    }
+
+                    private void dismiss(final int position) {
+                        boolean isDrive = position == 0;
+
+                        if(!isDrive) {
+                            mCursor.moveToPosition(position - 1);
+                            int previousDriveId = mCursor.getInt(DRIVES_ID_INDEX);
+                            mCursor.moveToPosition(position);
+                            int thisDriveId = mCursor.getInt(DRIVES_ID_INDEX);
+                            isDrive = previousDriveId != thisDriveId;
+                        }
+                        else
+                            mCursor.moveToPosition(position);
+
+                        if(isDrive) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(mFragment.getActivity());
+                            builder.setMessage(R.string.delete_drive).setTitle(R.string.confirm_deletion);
+                            builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    notifyDataSetChanged();
+                                }
+                            });
+                            builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    notifyDataSetChanged();
+                                }
+                            });
+                            builder.create().show();
+                        }
+                        else {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(mFragment.getActivity());
+                            builder.setMessage(R.string.delete_entry).setTitle(R.string.confirm_deletion);
+                            builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    notifyDataSetChanged();
+                                }
+                            });
+                            builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    notifyDataSetChanged();
+                                }
+                            });
+                            builder.create().show();
+                        }
+
+                    }
+
+                });
+        mFragment.mHistory.addOnItemTouchListener(swipeTouchListener);
     }
 
     @Override
@@ -234,6 +312,7 @@ public class DataAdapter extends RecyclerView.Adapter {
                                     .zoom(15.5f).bearing(0).tilt(0).build()));
                 }
             });
+
         }
         else {
             holder.mCardView.setClickable(false);
