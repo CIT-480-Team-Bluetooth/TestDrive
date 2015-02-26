@@ -20,9 +20,10 @@ import java.nio.channels.FileChannel;
 /**
  * Created by jeffq on 2/5/2015.
  */
-public class ExportFragment extends Fragment {
+public class ExportFragment extends TestDriveFragment {
 
     public Button mCopyDBButton;
+    public Button mClearDBButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -32,6 +33,17 @@ public class ExportFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+
+        mClearDBButton = (Button)view.findViewById(R.id.clear_db_button);
+        mClearDBButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity mainActivity = (MainActivity)getActivity();
+                LoggerService.LoggerBinder binder = mainActivity.getLoggerInterface();
+                if(binder != null)
+                    binder.clearDatabase();
+            }
+        });
 
         mCopyDBButton = (Button)view.findViewById(R.id.copy_db_button);
         mCopyDBButton.setOnClickListener(new View.OnClickListener() {
@@ -89,5 +101,10 @@ public class ExportFragment extends Fragment {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void syncStartStop(boolean started) {
+        mClearDBButton.setEnabled(!started);
     }
 }

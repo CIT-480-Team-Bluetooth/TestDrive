@@ -2,11 +2,13 @@ package edu.oakland.secs.testdrive;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Environment;
 import android.provider.ContactsContract;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Layout;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -54,6 +57,10 @@ public class DataAdapter extends RecyclerView.Adapter {
     private final int ENTRIES_ID_INDEX;
     private final int[] DIFF_INDICIES;
 
+    private final SparseIntArray mIndexToImage = new SparseIntArray();
+    private final SparseIntArray mIndexToString = new SparseIntArray();
+    private final SparseIntArray mIndexToArray = new SparseIntArray();
+
     private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public DataAdapter(Context context, Cursor c) {
@@ -84,6 +91,28 @@ public class DataAdapter extends RecyclerView.Adapter {
                 SPEED_INDEX,
                 BEARING_INDEX
         };
+
+        mIndexToImage.put(WEATHER_CONDITION_INDEX, R.drawable.cloudstorage);
+        mIndexToImage.put(ROAD_TYPE_INDEX, R.drawable.concrete);
+        mIndexToImage.put(ROAD_CONDITION_INDEX, R.drawable.road41);
+        mIndexToImage.put(VISIBILITY_INDEX, R.drawable.foggy4);
+        mIndexToImage.put(TRAFFIC_CONGESTION_INDEX, R.drawable.traffic17);
+        mIndexToImage.put(LATITUDE_INDEX, R.drawable.facebook30);
+        mIndexToImage.put(LONGITUDE_INDEX, R.drawable.facebook30);
+        mIndexToImage.put(SPEED_INDEX, R.drawable.facebook30);
+        mIndexToImage.put(BEARING_INDEX, R.drawable.facebook30);
+
+        mIndexToString.put(WEATHER_CONDITION_INDEX, R.string.weather);
+        mIndexToString.put(ROAD_TYPE_INDEX, R.string.road_type);
+        mIndexToString.put(ROAD_CONDITION_INDEX, R.string.road_condition);
+        mIndexToString.put(VISIBILITY_INDEX, R.string.visibility);
+        mIndexToString.put(TRAFFIC_CONGESTION_INDEX, R.string.traffic);
+
+        mIndexToArray.put(WEATHER_CONDITION_INDEX, R.array.weather_items);
+        mIndexToArray.put(ROAD_TYPE_INDEX, R.array.road_type_items);
+        mIndexToArray.put(ROAD_CONDITION_INDEX, R.array.road_condition_items);
+        mIndexToArray.put(VISIBILITY_INDEX, R.array.visibility_items);
+        mIndexToArray.put(TRAFFIC_CONGESTION_INDEX, R.array.traffic_items);
 
     }
 
@@ -130,23 +159,55 @@ public class DataAdapter extends RecyclerView.Adapter {
 
             }
 
+            final boolean isEnglish = Locale.getDefault().getLanguage().equals(Locale.ENGLISH.getLanguage());
+
             StringBuilder builder = new StringBuilder();
             Iterator it = diffMap.entrySet().iterator();
             boolean first = true;
             while(it.hasNext()) {
                 Map.Entry<Integer, Pair<String, String>> pair =
                         (Map.Entry<Integer, Pair<String, String>>)it.next();
+
+                String changeName = null;
+                int changeNameIndex = mIndexToString.get(pair.getKey(), -1);
+                if(changeNameIndex != -1)
+                    changeName = mContext.getString(changeNameIndex);
+
+                if(!first) {
+                    builder.append(mContext.getString(R.string.value_changed_separator));
+                    if(changeName != null) {
+                        if(isEnglish)
+                            changeName = changeName.substring(0,1).toLowerCase() + changeName.substring(1);
+                    }
+                }
+
+                if(changeName == null)
+                    continue;
+
+                String changedValue = mContext.getResources()
+                        .getStringArray(mIndexToArray.get(pair.getKey()))
+                        [Integer.valueOf(pair.getValue().second) - 1];
+                builder.append(mContext.getString(R.string.value_changed, changeName, changedValue));
+
+                first = false;
             }
 
-            if(diffMap.size() == 1) {
-                int singleDiffIndex = diffMap.keySet().iterator().next().intValue();
-                if(singleDiffIndex == WEATHER_CONDITION_INDEX)
-                    holder.mDataEntryImage.setImageResource(R.drawable.cloudstorage);
-            }
-            else
-                holder.mDataEntryImage.setImageResource(android.R.color.transparent);
+            int imageIndex = android.R.color.transparent;
 
-            holder.mDataEntryText.setText(String.valueOf(mCursor.getInt(START_TIME_INDEX)));
+            if(diffMap.isEmpty())
+                builder.append(mContext.getString(R.string.nothing_changed));
+            else {
+                if(first) {
+                    /* only location changes */
+                    builder.append(mContext.getString(R.string.location_updated));
+                }
+                int firstDiffIndex = diffMap.keySet().iterator().next().intValue();
+                imageIndex = mIndexToImage.get(firstDiffIndex);
+            }
+            builder.append(mContext.getString(R.string.value_changed_ending));
+
+            holder.mDataEntryImage.setImageResource(imageIndex);
+            holder.mDataEntryText.setText(builder.toString());
 
         }
 

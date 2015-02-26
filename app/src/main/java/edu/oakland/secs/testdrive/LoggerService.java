@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
 import android.os.Binder;
@@ -45,6 +46,7 @@ public class LoggerService extends Service {
     private static final int MESSAGE_START = 0;
     private static final int MESSAGE_STOP = 1;
     private static final int MESSAGE_LOG = 2;
+    private static final int MESSAGE_CLEAR = 3;
 
     private static final String DATA_MODEL = "MODEL";
     private static final String DATA_VIN = "VIN";
@@ -77,6 +79,9 @@ public class LoggerService extends Service {
                     log(msg.getData().getInt(DATA_WEATHER), msg.getData().getInt(DATA_ROAD_TYPE),
                             msg.getData().getInt(DATA_ROAD_CONDITION), msg.getData().getInt(DATA_VISIBILITY),
                             msg.getData().getInt(DATA_TRAFFIC), msg.getData().getBoolean(DATA_CONFIRMATION, true));
+                    break;
+                case MESSAGE_CLEAR:
+                    clearDatabase();
                     break;
             }
         }
@@ -177,6 +182,17 @@ public class LoggerService extends Service {
 
         }
 
+        public void clearDatabase() {
+            if(!mRunning.get()) {
+                synchronized (mDatabase) {
+                    SQLiteDatabase db = mDatabase.getWritableDatabase();
+                    db.execSQL(Database.CLEAR_DRIVES_SQL);
+                    db.execSQL(Database.CLEAR_ENTRIES_SQL);
+                }
+                Toast.makeText(LoggerService.this, R.string.database_cleared, Toast.LENGTH_SHORT).show();
+            }
+        }
+
         public long getDriveStartTime() {
             return mDriveStartTime;
         }
@@ -255,6 +271,10 @@ public class LoggerService extends Service {
 
         public Database getDatabase() {
             return mDatabase;
+        }
+
+        public void clearDatabase() {
+            mServiceHandler.sendEmptyMessage(MESSAGE_CLEAR);
         }
 
     }

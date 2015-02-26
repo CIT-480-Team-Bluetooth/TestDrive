@@ -9,4 +9,11 @@
         android:text="@string/copy_db"
         android:id="@+id/copy_db_button"
         android:layout_gravity="center_horizontal" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/clear_database"
+        android:id="@+id/clear_db_button"
+        android:layout_gravity="center_horizontal" />
 </LinearLayout>

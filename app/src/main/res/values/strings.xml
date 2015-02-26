@@ -6,7 +6,7 @@
     <string name="action_settings">Settings</string>
     <string name="vehicle">Vehicle</string>
     <string name="record">Record</string>
-    <string name="weather">Weather conditions</string>
+    <string name="weather">Weather condition</string>
     <string-array name="weather_items">
         <item>Rain</item>
         <item>Snow</item>
@@ -66,6 +66,22 @@
         Team members: Jeffrey Quesnelle, Hubert Wolski, Yaseen Syed, Safayat Amin, Alex Galan\n\n
         Creative Commons attributions:\n
         Car icon: Icon made by http://www.icons8.com, from http://www.flaticon.com, under CC BY 3.0\n
-        Cloud icon: Icon made by http://www.freepik.com, from http://www.flaticon.com CC BY 3.0
+        Cloud icon: Icon made by http://www.freepik.com, from http://www.flaticon.com CC BY 3.0\n
+        Location icon: Icon made by http://www.simpleicon.com, from http://www.flaticon.com, under CC BY 3.0\n
+        Concrete icon: Icon made by http://www.freepik.com, from http://www.flaticon.com, under CC BY 3.0\n
+        Road icon: Icon made by http://www.freepik.com, from http://www.flaticon.com, under CC BY 3.0\n
+        Foggy icon: Icon made by http://catalinfertu.com, from http://www.flaticon.com, under CC BY 3.0\n
+        Traffic icon: Icon made by http://www.icons8.com, from http://www.flaticon.com, under CC BY 3.0
     </string>
+    <string name="value_changed">%1$s changed to %2$s</string>
+    <string name="value_changed_separator">,\u0020</string>
+    <string name="value_changed_ending">.</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+    <string name="bearing">Bearing</string>
+    <string name="speed">Speed</string>
+    <string name="location_updated">Location updated</string>
+    <string name="nothing_changed">Nothing changed</string>
+    <string name="clear_database">Clear database</string>
+    <string name="database_cleared">Database cleared!</string>
 </resources>
