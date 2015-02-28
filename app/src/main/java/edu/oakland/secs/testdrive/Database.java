@@ -195,4 +195,5 @@ public class Database extends SQLiteOpenHelper {
 
     public static final String CLEAR_ENTRIES_SQL = "DELETE FROM " + Contract.Entries.TABLE_NAME;
     public static final String CLEAR_DRIVES_SQL = "DELETE FROM " + Contract.Drives.TABLE_NAME;
+
 }

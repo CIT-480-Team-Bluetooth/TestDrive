@@ -3,6 +3,8 @@ package edu.oakland.secs.testdrive;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -29,7 +31,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by jeffq on 2/25/2015.
+ * Adapter for the card view on the data fragment that shows all the entries recorded.
+ * A lot of this should probably be in the fragment, but meh --JQ 2/28/15
  */
 public class DataAdapter extends RecyclerView.Adapter {
 
@@ -172,6 +175,7 @@ public class DataAdapter extends RecyclerView.Adapter {
                             builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
+
                                     notifyDataSetChanged();
                                 }
                             });
@@ -189,7 +193,8 @@ public class DataAdapter extends RecyclerView.Adapter {
                             builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    notifyDataSetChanged();
+                                    mCursor.moveToPosition(dismiss.position);
+                                    removeEntry(dismiss.position, mCursor.getInt(ENTRIES_ID_INDEX));
                                 }
                             });
                             builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -236,6 +241,8 @@ public class DataAdapter extends RecyclerView.Adapter {
         }
         else {
 
+            int firstDiffIndex = -1;
+
             HashMap<Integer, Pair<String, String>> diffMap = new HashMap<Integer, Pair<String, String>>();
             for(int index : DIFF_INDICIES) {
                 mCursor.moveToPosition(i - 1);
@@ -246,6 +253,11 @@ public class DataAdapter extends RecyclerView.Adapter {
                 if(((previousVal == null) || (currentVal == null) || !previousVal.equals(currentVal))) {
                     if(previousVal != null || currentVal != null)
                         diffMap.put(index, new Pair<String, String>(previousVal, currentVal));
+                    if(firstDiffIndex == -1)
+                        firstDiffIndex = index;
+                    else if(firstDiffIndex == LATITUDE_INDEX || firstDiffIndex == LONGITUDE_INDEX ||
+                            firstDiffIndex == SPEED_INDEX || firstDiffIndex == BEARING_INDEX)
+                        firstDiffIndex = index;
                 }
 
             }
@@ -290,7 +302,6 @@ public class DataAdapter extends RecyclerView.Adapter {
                     /* only location changes */
                     builder.append(mFragment.getString(R.string.location_updated));
                 }
-                int firstDiffIndex = diffMap.keySet().iterator().next().intValue();
                 imageIndex = mIndexToImage.get(firstDiffIndex);
             }
             builder.append(mFragment.getString(R.string.value_changed_ending));
@@ -336,5 +347,64 @@ public class DataAdapter extends RecyclerView.Adapter {
         return mCursor.getCount();
     }
 
+    private void removeEntry(final int position, final int id) {
+        new AsyncTask<Void, Void, Cursor>() {
+
+            @Override
+            protected Cursor doInBackground(Void... params) {
+                MainActivity activity = (MainActivity)mFragment.getActivity();
+                LoggerService.LoggerBinder binder = activity.getLoggerInterface();
+                if(binder == null)
+                    return null;
+
+                Database db = binder.getDatabase();
+                synchronized(db) {
+                    SQLiteDatabase writable = db.getWritableDatabase();
+                    writable.delete(Database.Contract.Entries.TABLE_NAME,
+                            Database.Contract.Entries._ID + " = ?", new String[] { String.valueOf(id) });
+                    return writable.rawQuery(Database.GET_DRIVES_AND_ENTRIES_SQL, null);
+                }
+
+            }
+
+            @Override
+            protected void onPostExecute(Cursor cursor) {
+                mCursor = cursor;
+                notifyItemRangeRemoved(position, 1);
+            }
+
+        }.execute();
+    }
+
+    private void removeDrive(final int position, final int id) {
+        new AsyncTask<Void, Void, Cursor>() {
+
+            @Override
+            protected Cursor doInBackground(Void... params) {
+                MainActivity activity = (MainActivity)mFragment.getActivity();
+                LoggerService.LoggerBinder binder = activity.getLoggerInterface();
+                if(binder == null)
+                    return null;
+
+                Database db = binder.getDatabase();
+                synchronized(db) {
+                    SQLiteDatabase writable = db.getWritableDatabase();
+                    writable.delete(Database.Contract.Drives.TABLE_NAME,
+                            Database.Contract.Drives._ID + " = ?", new String[] { String.valueOf(id) });
+                    writable.delete(Database.Contract.Entries.TABLE_NAME,
+                            Database.Contract.Entries.COLUMN_NAME_DRIVE + " = ?", new String[] { String.valueOf(id) });
+                    return writable.rawQuery(Database.GET_DRIVES_AND_ENTRIES_SQL, null);
+                }
+
+            }
+
+            @Override
+            protected void onPostExecute(Cursor cursor) {
+                mCursor = cursor;
+                notifyItemRangeRemoved(position, 1);
+            }
+
+        }.execute();
+    }
 
 }
