@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -129,32 +130,41 @@ public class DataAdapter extends RecyclerView.Adapter {
                     }
 
                     @Override
-                    public void onDismissedBySwipeLeft(RecyclerView recyclerView, int[] reverseSortedPositions) {
-                        onDismissed(recyclerView, reverseSortedPositions);
+                    public void onDismissedBySwipeLeft(RecyclerView recyclerView, List<SwipeableRecyclerViewTouchListener.PendingDismissData> pendingDismisses) {
+                        onDismissed(recyclerView, pendingDismisses);
                     }
 
                     @Override
-                    public void onDismissedBySwipeRight(RecyclerView recyclerView, int[] reverseSortedPositions) {
-                        onDismissed(recyclerView, reverseSortedPositions);
+                    public void onDismissedBySwipeRight(RecyclerView recyclerView, List<SwipeableRecyclerViewTouchListener.PendingDismissData> pendingDismisses) {
+                        onDismissed(recyclerView, pendingDismisses);
                     }
 
-                    private void onDismissed(RecyclerView recyclerView, int[] reverseSortedPositions) {
-                        for(int position: reverseSortedPositions)
-                            dismiss(position);
+                    private void onDismissed(RecyclerView recyclerView, List<SwipeableRecyclerViewTouchListener.PendingDismissData> pendingDismisses) {
+                        for(SwipeableRecyclerViewTouchListener.PendingDismissData dismiss: pendingDismisses)
+                            dismiss(dismiss);
                     }
 
-                    private void dismiss(final int position) {
-                        boolean isDrive = position == 0;
+                    private void resetView(SwipeableRecyclerViewTouchListener.PendingDismissData dismiss) {
+                        dismiss.view.setAlpha(dismiss.alpha);
+                        dismiss.view.setTranslationX(0);
+                        ViewGroup.LayoutParams lp = dismiss.view.getLayoutParams();
+                        lp.height = dismiss.originalHeight;
+                        dismiss.view.setLayoutParams(lp);
+
+                    }
+
+                    private void dismiss(final SwipeableRecyclerViewTouchListener.PendingDismissData dismiss) {
+                        boolean isDrive = dismiss.position == 0;
 
                         if(!isDrive) {
-                            mCursor.moveToPosition(position - 1);
+                            mCursor.moveToPosition(dismiss.position - 1);
                             int previousDriveId = mCursor.getInt(DRIVES_ID_INDEX);
-                            mCursor.moveToPosition(position);
+                            mCursor.moveToPosition(dismiss.position);
                             int thisDriveId = mCursor.getInt(DRIVES_ID_INDEX);
                             isDrive = previousDriveId != thisDriveId;
                         }
                         else
-                            mCursor.moveToPosition(position);
+                            mCursor.moveToPosition(dismiss.position);
 
                         if(isDrive) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(mFragment.getActivity());
@@ -168,7 +178,7 @@ public class DataAdapter extends RecyclerView.Adapter {
                             builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    notifyDataSetChanged();
+                                    resetView(dismiss);
                                 }
                             });
                             builder.create().show();
@@ -185,7 +195,7 @@ public class DataAdapter extends RecyclerView.Adapter {
                             builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    notifyDataSetChanged();
+                                    resetView(dismiss);
                                 }
                             });
                             builder.create().show();

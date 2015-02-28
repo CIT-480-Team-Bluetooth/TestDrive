@@ -1,6 +1,7 @@
 /*
  * Copyright 2013 Google Inc.
  * Copyright 2015 Bruno Romeu Nunes
+ * Copyright 2015 Jeffrey Quesnelle
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +61,9 @@ import java.util.List;
  * <p/>
  * <p>This class Requires API level 12 or later due to use of {@link
  * android.view.ViewPropertyAnimator}.</p>
+ *
+ * Hacked by Jeffrey Quesnelle to offload restoring the view to the callbacks (which allows
+ * us to prompt the user with a dialog to ask if they're really sure they want to dismiss)
  */
 public class SwipeableRecyclerViewTouchListener implements RecyclerView.OnItemTouchListener {
     // Cached ViewConfiguration and system-wide constant values
@@ -308,15 +312,21 @@ public class SwipeableRecyclerViewTouchListener implements RecyclerView.OnItemTo
                     // Sort by descending position
                     Collections.sort(mPendingDismisses);
 
+                    /*
                     int[] dismissPositions = new int[mPendingDismisses.size()];
                     for (int i = mPendingDismisses.size() - 1; i >= 0; i--) {
                         dismissPositions[i] = mPendingDismisses.get(i).position;
                     }
+                    */
+                    for (PendingDismissData pendingDismiss : mPendingDismisses) {
+                        pendingDismiss.originalHeight = originalHeight;
+                        pendingDismiss.alpha = mAlpha;
+                    }
 
                     if (mFinalDelta > 0) {
-                        mSwipeListener.onDismissedBySwipeRight(mRecyclerView, dismissPositions);
+                        mSwipeListener.onDismissedBySwipeRight(mRecyclerView, mPendingDismisses);
                     } else {
-                        mSwipeListener.onDismissedBySwipeLeft(mRecyclerView, dismissPositions);
+                        mSwipeListener.onDismissedBySwipeLeft(mRecyclerView, mPendingDismisses);
                     }
 
                     // Reset mDownPosition to avoid MotionEvent.ACTION_UP trying to start a dismiss
@@ -374,24 +384,24 @@ public class SwipeableRecyclerViewTouchListener implements RecyclerView.OnItemTo
          * Called when the item has been dismissed by swiping to the left.
          *
          * @param recyclerView           The originating {@link android.support.v7.widget.RecyclerView}.
-         * @param reverseSortedPositions An array of positions to dismiss, sorted in descending
-         *                               order for convenience.
+         * @param mPendingDismisses      Information about the items being dimissed
          */
-        void onDismissedBySwipeLeft(RecyclerView recyclerView, int[] reverseSortedPositions);
+        void onDismissedBySwipeLeft(RecyclerView recyclerView, List<PendingDismissData> mPendingDismisses);
 
         /**
          * Called when the item has been dismissed by swiping to the right.
          *
          * @param recyclerView           The originating {@link android.support.v7.widget.RecyclerView}.
-         * @param reverseSortedPositions An array of positions to dismiss, sorted in descending
-         *                               order for convenience.
+         * @param mPendingDismisses      Information about the items being dimissed
          */
-        void onDismissedBySwipeRight(RecyclerView recyclerView, int[] reverseSortedPositions);
+        void onDismissedBySwipeRight(RecyclerView recyclerView, List<PendingDismissData> mPendingDismisses);
     }
 
     class PendingDismissData implements Comparable<PendingDismissData> {
         public int position;
         public View view;
+        public int originalHeight;
+        public float alpha;
 
         public PendingDismissData(int position, View view) {
             this.position = position;
