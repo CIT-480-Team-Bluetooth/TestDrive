@@ -38,7 +38,7 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
     public GoogleMap mMap;
     private LinearLayout mLinearLayout;
     public RecyclerView mHistory;
-    private DataAdapter mDataAdapter;
+    public DataAdapter mDataAdapter;
     private LinearLayoutManager mLayoutManager;
 
     /* Saved through view being destroyed and recreated */
@@ -116,8 +116,12 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
 
     }
 
-    private void setAdapter() {
+    public void setAdapter() {
         new AsyncTask<Void, Void, Cursor>() {
+
+            @Override
+            protected void onPreExecute() {
+            }
 
             @Override
             protected Cursor doInBackground(Void... params) {
@@ -137,6 +141,7 @@ public class DataFragment extends Fragment implements OnMapReadyCallback {
             protected void onPostExecute(Cursor cursor) {
                 if(mHistory != null && cursor != null) {
                     mHistory.setAdapter(mDataAdapter = new DataAdapter(DataFragment.this, cursor));
+                    mHistory.scrollToPosition(mDataAdapter.getItemCount() - 1);
                 }
             }
 

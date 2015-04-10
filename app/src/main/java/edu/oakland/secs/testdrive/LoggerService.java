@@ -120,6 +120,9 @@ public class LoggerService extends Service {
                     Toast.makeText(LoggerService.this, R.string.saved, Toast.LENGTH_SHORT).show();
                 }
             }
+
+            if(mCallback != null)
+                mCallback.onLog();
         }
 
         private void start(String model, String vin, String notes) {
@@ -306,6 +309,7 @@ public class LoggerService extends Service {
 
     public static interface Callbacks {
         public void onStartStop(boolean started);
+        public void onLog();
     }
 
 

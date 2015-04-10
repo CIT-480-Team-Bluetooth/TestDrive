@@ -100,6 +100,17 @@ public class MainActivity extends ActionBarActivity implements ViewPager.OnPageC
                         }
                     });
                 }
+
+                public void onLog() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(mDataFragment != null)
+                                if(mDataFragment.mDataAdapter != null)
+                                    mDataFragment.setAdapter();
+                        }
+                    });
+                }
             });
             syncStartStop(mLoggerBinder.isRunning());
         }
